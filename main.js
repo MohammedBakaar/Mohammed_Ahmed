@@ -2,6 +2,8 @@ const express = require("express");
 const mysql2 = require("mysql2/promise");
 
 
+//https://ma3393616-4958078.postman.co/workspace/mohammed-ahmed's-Workspace~8b38594d-7ff1-47e5-8c5c-32f408cade2e/folder/54470041-b5f98e69-8ab3-471d-a706-8531e65adf22?action=share&source=copy-link&creator=54470041
+
 
 
 const createPrdousts = "CREATE TABLE IF NOT EXISTS `Products` (`ProductID` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `ProductName` varchar(50) NOT NULL, `Price` decimal(10,2) NOT NULL, `StockQuantity` int(11), `SupplierId` int(11))";
