@@ -70,12 +70,14 @@ app.post("/product/createProduct" , async(req,res,next)=>{
 app.post("/supplier/createSupplier" , async(req,res,next)=>{
     let { SupplierName , ContactNumber} = req.body;
   let [result]= await  db.execute("INSERT INTO `Supplier`( `SupplierName` , `ContactNumber` ) VALUES (?,?)",[SupplierName , ContactNumber]);
+  
     if(!result.affectedRows) return res.status(404).json({"message" : "Error"})
      res.status(200).json({
     message: "supplier added",
     result
   })
   })
+
   app.post("/sales/recordSale" , async(req,res,next)=>{
     let { ProductID , QuantitySold , SaleDate} = req.body;
   let [result]= await  db.execute("INSERT INTO `Sales`( `ProductID` , `QuantitySold` ,`SaleDate` ) VALUES (?,?,?)",[ProductID , QuantitySold,SaleDate]);
@@ -95,13 +97,7 @@ app.get("/supplier/getAll", async(req,res)=>{
     if(!result) return res.status(404).json({message : "not found"});
     res.status(200).json(result);
 })
-app.get("/sales/:id", async(req,res)=>{
-    let {id} = req.params
-    
-    let [result ]= await db.execute("SELECT * FROM `Sales` WHERE ProductID = ?; ",[id]);
-    if(!result.length) return res.status(404).json({message : "not found"});
-    res.status(200).json(result);
-})
+
 app.delete("/product/delete/:id",async (req,res)=>{
      let {id} = req.params;
     let [result ]= await db.execute("DELETE FROM `Products` WHERE ProductID = ?; ",[id]);
@@ -126,7 +122,7 @@ app.put("/product/update/:id", async (req, res) => {
     bindingArr.push(value)
   }
   updateQuery = updateQuery.slice(0, -1)
-  updateQuery += "WHERE id = ?"
+  updateQuery += "WHERE ProductID = ?"
   bindingArr.push(id)
   let [result] = await db.execute(updateQuery, bindingArr)
 
@@ -146,8 +142,10 @@ app.put("/supplier/update/:id", async (req, res) => {
     bindingArr.push(value)
   }
   updateQuery = updateQuery.slice(0, -1)
-  updateQuery += "WHERE id = ?"
+  updateQuery += "WHERE SupplierID = ?"
   bindingArr.push(id)
+
+  
   let [result] = await db.execute(updateQuery, bindingArr)
 
   if (!result.affectedRows) return res.status(404).json({ 'message': "Error" })
@@ -215,7 +213,47 @@ app.put("/product/bread",async (req,res)=>{
   res.status(200).json({message: "bread updated", result })
 
 })
+app.delete("/product/egg",async (req,res)=>{
+    const [result] = await db.query('DELETE FROM `Products` WHERE ProductName = ?',['Eggs'])
+    if (!result.affectedRows) return res.status(404).json({ 'message': "Error" },result)
 
+  res.status(200).json({message: "Eggs deleted", result })
+
+})
+app.get("/product/stock", async(req,res)=>{
+    const [result] = await db.execute(`SELECT * FROM Products ORDER BY StockQuantity DESC`);
+   
+    if(!result.length) return res.status(404).json({message : "not found"});
+    res.status(200).json(result[0]);
+})
+app.get("/supplier/f", async(req,res)=>{
+    const [result] = await db.execute('SELECT * FROM Supplier WHERE SupplierName LIKE ?',['F%']);
+   
+    if(!result.length) return res.status(404).json({message : "not found"});
+    res.status(200).json(result);
+})
+
+app.get("/product/nosales", async(req,res)=>{
+    const [result] = await db.execute(`SELECT p.* FROM Products p LEFT JOIN Sales s ON p.ProductID = s.SaleID WHERE s.SaleID IS NULL`);
+   
+    if(!result.length) return res.status(404).json({message : "not found"});
+    res.status(200).json(result);
+})
+
+app.get("/sales/report", async(req,res)=>{
+    const [result] = await db.execute(` SELECT p.ProductName , s.QuantitySold, s.SaleDate FROM Sales s INNER JOIN Products p ON s.ProductID = p.ProductID`);
+   
+   
+    if(!result.length) return res.status(404).json({message : "not found", result});
+    res.status(200).json(result);
+})
+app.get("/sales/:id", async(req,res)=>{
+    let {id} = req.params
+    
+    let [result ]= await db.execute("SELECT * FROM `Sales` WHERE ProductID = ?; ",[id]);
+    if(!result.length) return res.status(404).json({message : "not found"});
+    res.status(200).json(result);
+})
 
 
 
